@@ -96,7 +96,7 @@ def parse_line(lang, state, code_only=False, keep_tokens=True):
         return [rest_of_decl + rest_of_decl0], state
 
     decls, state = parse_declarations(lang, state, code_only, keep_tokens)
-    return [rest_of_decl, rest_of_decl0, decls], state
+    return [rest_of_decl, rest_of_decl0] + decls, state
 
 
 def parse_declarations(lang, state, code_only=False, keep_tokens=True):
@@ -126,21 +126,21 @@ def parse_declarations(lang, state, code_only=False, keep_tokens=True):
     comment2, comment2_0, state = parse_multiline_comment(lang, state, keep_tokens)
 
     if comment or comment2 or comment2_0:
-        line = state.line
+        line = [state.line]
         if not state.multi_end_stack:
             # Continue looking for declarations.
             line, state = parse_declarations(lang, state, code_only, keep_tokens)
         if code_only:
-            line = code + clear_line(comment) + clear_line(comment2) + clear_line(comment2_0) + line
+            line = [code, clear_line(comment), clear_line(comment2), clear_line(comment2_0)] + line
         else:
-            line = clear_line(code) + comment + comment2 + comment2_0 + line
+            line = [clear_line(code), comment, comment2, comment2_0] + line
         return line, state
     else:
         state.line = ''
         if code_only:
-            return code, state
+            return [code], state
         else:
-            return clear_line(code), state
+            return [clear_line(code)], state
 
 
 def parse_code(lang, state):
